@@ -1,2 +1,3 @@
-# probmodeler
-A open source repository supporting the Probabilistic Modeler in Three Months workshop (www.altdeep.ai/courses/probmodeler)
+# Probabilistic Modeler in Three Months Workshop Repository
+
+A open source repository supporting the [Probabilistic Modeler in Three Months workshop](https://www.altdeep.ai/courses/probmodeler).
