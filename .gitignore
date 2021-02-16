@@ -68,6 +68,9 @@ instance/
 # Scrapy stuff:
 .scrapy
 
+# R stuff
+*.nb.html
+
 # Sphinx documentation
 docs/_build/
 
