@@ -73,4 +73,11 @@ See past-student projects in the projects directory to get an impression of what
 
 ## Curriculum
 
-View the [curriculum](https://www.altdeep.ai/p/probmodeler) on the course page.
+In this course we will cover the following topics:
+
+* Practical Bayesian modeling workflows
+* Survey of computational frameworks for probabilistic modeling
+* Contemporary Bayesian inference algorithms
+* Bayesian hierarchical modeling
+* Latent variable models in machine learning
+* Use of deep learning in applied probabilistic modeling
