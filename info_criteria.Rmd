@@ -1,0 +1,62 @@
+---
+title: "Information theory for model evaluation and selection"
+output: html_document
+---
+
+Model evaluation and selection is the process of evaluating different models against one another and selecting the best model (or an ensemble of good models). Cross-validation is an example of a method for evaluation and comparison.
+
+In machine learning, comparing multiple models is a difficult task because it is impossible to simply choose the model that best fits the data: more complex models, i.e., more hidden layers and more filters can always fit the data better.
+
+This communication theory metaphor has a direct relationship to several techniques for evaluating the quality of a model. Below I explain some of them directly in terms of this communications metaphor.
+
+### Bayes Occam's Razor
+
+Assume you have two candidate models $M_1$ and $M_2$. One model is more complex, meaning it can “decode” a wide variety of “messages”. One model is simpler, meaning it can decode a narrower set of messages. Assume you have a set of messages sent by the DGP. Both models can decode them, albeit with some uncertainty; as Bayesian models, uncertainty is quantified by posterior probability.
+
+The principle of Bayes Occam’s razor is as follows. As a probability distribution, the posterior probability distribution [must integrate to 1](https://en.wikipedia.org/wiki/Probability_axioms#Second_axiom) to 1, which means it has a finite amount of probability to spread across all possible messages. Therefore, the more complex model will have a lower posterior probability value for the true message than the simpler model because the complex model can handle a broader set of messages, competing for a finite amount of probability.
+
+### Akaike information criterion (AIC) 
+
+Your model will almost never be an exact replica of the DGP; so some information will be lost in the sending from the DGP to the model. [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) estimates the relative amount of information lost by a given model: the less information a model loses, the higher the quality of that model.
+
+### Bayesian information criterion (BIC)
+
+If you have a list of candidate models and know one of them is a replica of the DGP (a “true” model), as the amount of data collected increases, then the true model will eventually get the highest [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion) score.
+
+## Formal Deep Dive
+
+For model $M$, Let $\theta_M$ be a parameter vector with cardinality $| \theta_M |$.  Let $x_i$ be the $i^{th}$ element of a data set $X$ that has a total of $N$ data points, and $log (\pi(x_i|\theta, M))$ be the pointwise [data likelihood](https://en.wikipedia.org/wiki/Likelihood_function) of $x_i$ for model M.  $\pi(\theta, M | X)$ is the posterior probability distribution of $\theta$ and $M$.  Specifically, we are interested in the posterior probability the model $M$ is the best model.
+
+### Bayes Occam's Razor
+
+For **Bayes Occam's razor**, we are interested in the posterior probability of the model. 
+
+$$\pi(M|X) = \int \pi(M, \theta|X)d\theta$$
+We compare $M_1$ and $M_2$ by comparing the posterior density of $\pi(M_1|X)$ to $\pi(M_2|X)$.
+
+### Bayesian Information Criterion
+
+Let $| \theta |$ be a parameter vector of cardinality, $x_i$ be the $i^{th}$ element of a data set $X$ that has a total of $N$ data points, and $log (\pi(x_i|\theta))$ be the pointwise likelihood of $x_i$.  Then the formula for BIC is as follows.
+
+$$
+\text{BIC}=| \theta | \text{log}(N)-2\sum_{i=1}^N \text{log} (\pi(x_i|\theta))
+$$
+
+Given a set of candidate models, the model with the lowest BIC is preferred.  So we can see $|\theta|\text{log}(N)$ is a penalty term; the more elements in the vector $\theta$, the larger the value of BIC.
+
+However, BIC is more than just a penalty on parameter count.  Information criteria are statistics, a thing you calculate from data. As the size of the data, statisticians like their statistics to converge to things that have useful interpretations.  BIC, for *regular* models (defined below), converges to an approximation of the negative logarithm of Bayes marginal likelihood (often called Bayes free energy). Bayes marginal likelihood is given as follows.
+
+$$ \pi(X| M) = \int \pi(X|\theta, M)\pi(\theta| M)d\theta$$
+
+### Widely Applicable Information Criteria
+
+Above we said that BIC only works for *regular* models. The formal definition of *regular* is (1) that the map taking a parameter to a probability distribution is one-to-one and (2) if its Fisher information matrix is always positive definite. Otherwise, the model is called *singular*. Many of the most interesting models we want to build with probabilistic modeling techniques are singular.  For example, any deep learning technique we want to use is certainly singular.  Latent variable models, such as mixture models, hierarchical models, graphical networks, topic models, and hidden Markov models are also singular.
+
+Widely applicable information criterion are information criteria what work for singular models.  Most modern probabilistic modeling tools enable you to implement these criteria.  See Watanabe 2013.
+
+## Go Deeper
+
+* Akaike, Hirotugu. "This Week’s Citation Classic." Current Contents Engineering, Technology, and Applied Sciences 12, no. 51 (1981): 42.
+* Burnham, Kenneth P., and David R. Anderson. "Multimodel inference: understanding AIC and BIC in model selection." Sociological methods & research 33, no. 2 (2004): 261-304.
+* N. D. Goodman and J. B. Tenenbaum (electronic). Probabilistic Models of Cognition. Retrieved December 1, 2019 from http://probmods.org. Section 10. Occam's Razor
+* Watanabe, Sumio. "A widely applicable Bayesian information criterion." Journal of Machine Learning Research 14, no. Mar (2013): 867-897.

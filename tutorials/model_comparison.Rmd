@@ -1,0 +1,60 @@
+---
+title: "Bayesian Model Comparison"
+output:
+  html_document:
+    df_print: paged
+---
+
+Given two competing models, we need ways of deciding which model is preferred.
+
+## Bayesian Cross-validation
+
+The gold-standard for model comparison in machine learning is cross-validation.  Cross-validation is a means of estimating how well a model generalizes beyond the training data.
+
+Suppose we have data $X = \{ x_1, ..., x_N \}$.  In cross-validation, we typically take that data and split it up into training and test sets.  We train the model on the training data and then get some kind of quantification of predictive accuracy on the test set (e.g., mean squared error, classification error, etc.).
+
+*k-fold cross-validation* creates $k$ different training-test splits, calculates the performance statistic for each of the k test sets, then takes the average.  The goal is to get a more stable statistic that is less vulnerable to having an unlucky split that makes performance look deceptively good.
+
+The extreme case of k-fold cross-validation is [leave-one-out cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)#Leave-one-out_cross-validation), where we have to create a test set of exactly 1 data point and calculate a statistic for how well the model could have predicted that data point.  Instead of repeating the procedure k times, we repeat it N times where N is the number of points in the data. 
+
+## Expected log pointwise predictive density
+
+We start by defining a measure of predictive accuracy that we can calculate across all points taken one at a time.
+
+Recall that the *posterior predictive distribution* quantifies our beliefs about what we will see data outside of the training data.  
+
+We trained our model on the training set $X = \{ x_1, ..., x_N \}$. One statistic we do use to evaluate predictive accuracy on the training set is to evaluate the *posterior predictive density* of each of these training points on $\pi(\tilde{x}_i|X)$.
+
+We'll take the log of the densities so we can add them up.  We'll call this quantity *log pointwise predictive density* or lpd.
+$$\text{lpd} = \sum_{i=1}^N log(\pi(x_i|X))$$
+
+We don't have a closed-form of the posterior predictive distribution, so we can't directly calculate densities from this distribution.  So we'll we will use Monte Carlo sampling to evaluate the density with M samples of $\theta_j$ from the posterior.  This calculation estimates lpd, so we'll call it *computed log pointwise predictive density* or $\hat{lpd}$. 
+$$ \hat{\text{lpd}} = \sum_{i=1}^N \text{log} \left( \frac{1}{M}\sum_{j=1}^M \pi(x_i|\theta_j) \right )$$
+## Bayesian Cross Validation
+
+So far, we have not been doing cross-validation.  The lpd calculation quantifies [goodness of fit](https://en.wikipedia.org/wiki/Goodness_of_fit) to the training data.  We need to refactor this so that we are evaluating log pointwise predictive density on *held-out data*.
+
+We'll focus on leave-one-out cross-validation since it is the most precise case of k-fold cross-validation. Let $X_{(-i)} = \{ x_1, ..., x_N \} - \{x_i\}$ meaning the data with $x_i$ removed.
+
+We will refactor lpd to get a quantity we'll call $\text{lpd}_{\text{loo}}$
+
+$$\text{lpd}_{\text{loo}}=\sum_{i=1}^{N} log(\pi(x_{i}|X_{(-i)})$$
+
+## Estimating Bayesian Cross-Validation
+
+Algorithmically, the above leave-one-out procedure means we have to train and sample from the model $N$ times.  That is pretty expensive.
+
+One way around this is to construct and *estimator* of $\text{lpd}_{\text{loo}}$.  One estimator we can use is called the widely applicable information criterion or $\text{WAIC}$.
+
+$$
+\text{WAIC} = \hat{\text{lpd}} - \sum_{i=1}^N V^M_{j=1}(log \pi(x_i|\theta_j))
+$$
+where $V^M_{j=1}$ is the [sample variance](https://www.statisticshowto.com/probability-and-statistics/descriptive-statistics/sample-variance/) of $log \pi(x_i|\theta_j)$ evaluated over M samples of $\theta_j$.  In other words, we calculate the second term with the following algorithm.
+
+For each data point $x_i$
+1. Sampling M samples of $\theta_j$ from the model trained on the full data.
+1. Evaluating $log \pi(x_i|\theta_j)$ for each sample.
+1. Calculate the sample variance of the results.
+
+We can do this by running the model training procedure once and calculating this algorithm on the results.  In Stan, you can calculate $log \pi(x_i|\theta_j)$ for each $x_i$ in the `generated quantities` block.
+

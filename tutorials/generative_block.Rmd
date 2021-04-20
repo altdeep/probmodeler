@@ -1,0 +1,139 @@
+---
+title: "Working with the Posterior"
+output:
+  html_document:
+    df_print: paged
+---
+
+Let's once again use the language of machine learning to breakdown the traditional Bayesian problem description again:
+
+* You are training a probability model on random variables X and θ. Everything that we observe in the training data is called X. Everything we do not observe is called a “parameter,” which we name θ. θ subsumes ideas like “weights” and “latent variables.”
+
+* You specify a distribution for components of θ in your model. In Stan, you do this in the model block. For θ, these distribution functions are called priors, and for X, they are called likelihood functions.
+
+* Your training procedure targets the posterior distribution P(θ|X). There are analytic ways to calculate the posterior as a canonical distribution. But in the general case, we use an algorithm to sample from the posterior. Without a canonical representation of the posterior, our understanding of the posterior relies completely on samples.
+
+Consider that fundamental mismatch; Stan and most other probabilistic modeling frameworks require canonical priors but only give you samples from the posterior.
+
+## Reasoning on the posterior
+
+We phrase almost all the questions you want to ask in Bayesian inference as the posterior expectation of a function over θ.
+
+$$ E(f(\theta) | X) = \int f(\theta)\pi(\theta |X)d\theta$$
+
+For example, suppose you are interested in a point estimate of θ. Then f(.) is just the identity, and you get the posterior mean.
+
+$$
+E(\theta| X) = \int \theta\pi(\theta |X)d\theta
+$$
+Suppose instead you want other descriptions of the posterior. An example is posterior variance.
+
+\begin{align*}
+var(\theta| X) &= E(\theta^2|X) - E(\theta|X)^2 \\
+&= \int \theta^2 \pi(\theta |X) d \theta - E(\theta|X)
+\end{align*}
+
+Percentiles are a bit trickier. Suppose you want to calculate a 95% credible interval (Bayesian alternative to a confidence interval). You need the 2.5% and 97.5% percentiles. To calculate the 2.5% and 97.5% percentiles, you to solve the following equations:
+
+\begin{align*}
+E(I(\theta \leq a)|X) = .025; \text{solve for a} \\
+E(I(\theta \geq b)|X) = .975; \text{solve for b} \\
+\end{align*}
+
+Note that Stan [provides a function](https://mc-stan.org/docs/2_25/functions-reference/functions-algebraic-solver.html) for finding algebraic solutions.
+
+### Technical note: Posterior mode is poorly defined.
+
+The *mode* of a distribution is the value that has the highest posterior probability mass or density; in Bayesian terms, we call it the [maximum a posteriori estimation](https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation).  But we don't know that function; we only have samples from it.
+
+One thing you can do is take the sample with the highest product of likelihood and prior probability.  Or you could [fit a kernel density function](https://en.wikipedia.org/wiki/Kernel_density_estimation) to the samples and finding the mode of this function.  But this is not the true mode of the posterior.
+
+## Monte Carlo estimation of posterior expectation
+
+Given samples from $\pi(\theta|X)$, our goal is to estimate $E(f(X)|\theta)$.  We do this by applying $f(.)$ to every sample and taking the mean.  Monte Carlo estimation theory guarantees that as the number of samples goes to infinity, the sample mean will converge to the true expectation.
+
+## Loss functions and posterior risk
+
+The most practically useful functions help us make decisions under uncertainty.  [Bayesian decision theory](https://en.wikipedia.org/wiki/Bayes_estimator) defines loss functions that quantify some cost resulting from undesirable parameter values.  We make decisions that minimize the posterior expectation of these loss functions.
+
+## Estimating posterior expectation in Stan
+
+```{r libraries, message=FALSE}
+library(rstan)
+library(tidyverse)
+library(tidybayes)
+```
+
+Revisiting the height and weight example, let's estimate $f(b) = b^2$.  Stan has a `generated quantities` block where we apply these functions to parameter values.
+
+```
+generated quantities {
+  real b_squared;
+  b_squared = b * b;    
+}
+```
+
+```{r show_generated_block, results="hide", message=FALSE}
+model_data <- read_delim("https://raw.githubusercontent.com/altdeep/probmodeler/main/tutorials/data/height_weight_age_male.csv", delim = ";") %>%
+  filter(age >= 18) %>%
+  select(height, weight) %>%
+  compose_data
+
+stan_program_code <- '
+data {
+  int<lower=1> n;
+  vector[n] height;
+  vector[n] weight;
+}
+parameters {
+  real<lower=0,upper=50> sigma;
+  real<lower=0> b;
+  real a;
+}
+transformed parameters {
+  vector[n] mu;
+  mu = a + b * weight;
+}
+model {
+  a ~ normal(178, 20);
+  b ~ lognormal(0, 1);
+  sigma ~ uniform(0, 50);
+  weight ~ normal(100, 10);
+  height ~ normal(mu, sigma);
+}
+generated quantities {
+  real b_squared;
+  b_squared = b * b;    
+}
+'
+compiled_program <- stan_model(model_code = stan_program_code)
+posterior <- sampling(object = compiled_program, data=model_data)
+```
+
+Now we can access `b_squared` samples from the sampling output. 
+
+```{r access_bsquared}
+b_samples <- rstan::extract(posterior)['b']$b
+b_squared_samples <- rstan::extract(posterior)['b_squared']$b_squared
+hist(b_squared_samples)
+```
+
+We estimate $E(b^2|\text{height}, \text{weight})$ simply by taking the mean.
+
+```{r monte_carlo}
+mean(b_squared_samples)
+```
+
+Among other things, we can use this to calculate posterior variance. For a random variable $Y$, $\text{var}{Y} = E((Y - E(Y))^2)$, which decomposes into $E(Y^2) - E(Y)^2$.  We can estimate each of those expectations separately, and combine them.
+
+```{r estimate_variance}
+mean(b_squared_samples) - mean(b_samples)^2
+```
+
+Of course, we can simply calculate our estimate as the sample variance.
+
+```{r variance}
+var(b_samples)
+```
+
+The point is, we can apply a function to each sample, then take the mean of the results.  Stan's `generated quantities` block makes this easy for us.
