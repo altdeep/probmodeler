@@ -32,8 +32,8 @@ I will also note that it was helpful to visualize the data in excel using [this 
 
 ## Models
 I have included two Jupyter Notebooks.  Please read them in order; I have written them assuming the reader will read the Pooled Pyro notebook followed by the Partially Pooled Pyro notebook.  
-1. [Pooled Pyro](cs7290_ff_pyro_flat.ipynb)
-1. [Partially Pooled Pyro](cs7290_ff_pyro_hier.ipynb)
+1. [Pooled Pyro](cs7290_ff_pyro_flat.ipynb).  [Colab link](https://colab.research.google.com/drive/1MnC1vJNKsBGAyXwLeLNkWin2MuIzLryl?usp=sharing).
+1. [Partially Pooled Pyro](cs7290_ff_pyro_hier.ipynb).  [Colab link](https://colab.research.google.com/drive/19YzbySOV5BN6-3P5XGheMd6Nd6I7u6Z4?usp=sharing).
 
 ## Results
 Models were judged based on the square root of Mean Squared Error (MSE).  The pooled version has a sqrt(MSE) around 70 while the partially pooled model has a sqrt(MSE) around 60.  
