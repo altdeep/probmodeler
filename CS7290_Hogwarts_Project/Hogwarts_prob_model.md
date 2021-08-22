@@ -36,6 +36,8 @@ Finally, I built a Multi-Layer Perceptron (MLP) neural net (NN) with the intent 
 
 However, due to time constraints AVI is not implemented.
 
+See youtube summary video [here](https://youtu.be/J0MLiDkzyKs) for additional information.
+
 # Getting Started
 
 This project is built in a series of Google Colab Notebooks. 
