@@ -18,24 +18,33 @@ Since this is real-world project, each of us signed a Non-disclosure Agreement w
 
 Now I'll give a brief introduction of all each file that I've uploaded:
 
-(Artefact)Mian Zhang - CS7290 Project Code.ipynb ----> The Jupyter Notebook of the code implementing the project, from importing libraries to the final results. Analysis and explanation are also embedded. 
+(Artefact)Mian Zhang - CS7290 Project Code.ipynb ----> A Jupyter Notebook of the code implementing the project, from importing libraries to the final results. Analysis and explanation are also embedded. 
+
+(Reproducible)Mian Zhang - CS7290 Project Code.ipynb ----> A Jupyter Notebook copied from the above one, with reading fake data as dataframes. Again, I cannot guarantee that using the fake data can obtain the same result, because some parts of Artefact's model is building on the dataset. 
 
 df_transformed.csv ----------------------------------> A fake dataset corresponding to the variable 'df_transformed' in the code
 
 data_2.csv ------------------------------------------> A fake dataset corresponding to the variable 'data2' in the code
 
-Project Code.pdf ---------------------------- -------> A pdf version copied from the Jupyter Notebook without any changes.
+Project Code.pdf ---------------------------- -------> A pdf version copied from the Jupyter Notebook((Artefact)Mian Zhang - CS7290 Project Code.ipynb) without any changes.
 
 Presentation Slides.pdf -----------------------------> The slides for presentation.
 
 If you want to view the project, I HIGHLY recommend you viewing in the following order:
 
 1. If you just want to know what I did, view the Presentation Slides.pdf.
-2. If you want to play with the code, after finish viewing the Presentation Slides.pdf, open (Artefact)Mian Zhang - CS7290 Project Code.ipynb and read data from 'df_transformed.csv' and 'data_2.csv' and define them to be 'df_transformed' and 'data2' respectively, rather than running the code from the top and creating these two dataframes after data cleaning, feature engineering and data transformation. Again, I cannot guarantee that using the fake data can obtain the same result, because some parts of Artefact's model is building on the dataset. 
+2. If you want to play with the code, after finish viewing the Presentation Slides.pdf, open (Reproducible)Mian Zhang - CS7290 Project Code.ipynb, which reads data from 'df_transformed.csv' and 'data_2.csv' and defines them to be 'df_transformed' and 'data2' respectively, rather than running the code from the top and creating these two dataframes after data cleaning, feature engineering and data transformation. 
 
 ## Setup
+Version:
 
-In my opinion, nothing special need to be stated here, except the version of PyMC3 and Arviz. The version of PyMC3 is 3.11.2. Arviz package used here is a development version, whcih can be installed using 'pip install git+git://github.com/arviz-devs/arviz.git'.
+PyMC3: 3.11.2
+Arviz: development version (Installation: 'pip install git+git://github.com/arviz-devs/arviz.git')
+Theano-PyMC3: 1.1.2 (Note: This is not 'Theano' but 'Theano-PyMC3'. I don't think we will use 'Theano' here.)
+Pandas: 1.2.5
+Numpy: 1.20.3
+Matplotlib: 3.3.4
+sklearn: 0.24.2
 
 ## Tasks, results and insights.
 
