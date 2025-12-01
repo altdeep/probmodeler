@@ -6,7 +6,7 @@ Prof. Robert Osazuwa Ness
 
 Northeastern University, Khoury College of Computer Sciences
 
-This Northeastern University syllabus for Causal Modeling in Machine Learning course.  The schedule is subject to adjustment.  Please check frequently to stay updated.  Video lectures and readings should be read/viewed prior to class.
+ The schedule is subject to adjustment.  Please check frequently to stay updated.  Video lectures and readings should be read/viewed prior to class.
 
 ## What are the prerequisites?
 
